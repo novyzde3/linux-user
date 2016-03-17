@@ -23,16 +23,17 @@ set nocompatible
 set backspace=indent,eol,start
 
 if has("vms")
-  set nobackup		" do not keep a backup file, use versions instead
+  set nobackup  " do not keep a backup file, use versions instead
 else
-  set backup		" keep a backup file
+  set backup    " keep a backup file
 endif
-set history=50		" keep 50 lines of command line history
-set ruler		" show the cursor position all the time
-set showcmd		" display incomplete commands
-set incsearch		" do incremental searching
-set smartcase           " ignore case pro vyhledavani
-set number
+
+set history=100 " keep 50 lines of command line history
+set ruler       " show the cursor position all the time
+set showcmd     " display incomplete commands
+set incsearch   " do incremental searching
+set smartcase   " ignore case pro vyhledavani
+set number      " number lines
 
 " For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries
 " let &guioptions = substitute(&guioptions, "t", "", "g")
@@ -52,8 +53,8 @@ inoremap <C-U> <C-G>u<C-U>
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.
 if &t_Co > 2 || has("gui_running")
-  syntax on
- set hlsearch
+    syntax on
+    set hlsearch
 endif
 
 " Only do this part when compiled with support for autocommands.
@@ -67,43 +68,51 @@ if has("autocmd")
 
   " Put these in an autocmd group, so that we can delete them easily.
   augroup vimrcEx
-  au!
+	  au!
 
-  " For all text files set 'textwidth' to 78 characters.
-  autocmd FileType text setlocal textwidth=78
+	  " For all text files set 'textwidth' to 78 characters.
+	  autocmd FileType text setlocal textwidth=78
 
-  " When editing a file, always jump to the last known cursor position.
-  " Don't do it when the position is invalid or when inside an event handler
-  " (happens when dropping a file on gvim).
-  " Also don't do it when the mark is in the first line, that is the default
-  " position when opening a file.
-  autocmd BufReadPost *
-    \ if line("'\"") > 1 && line("'\"") <= line("$") |
-    \   exe "normal! g`\"" |
-    \ endif
-
+	  " When editing a file, always jump to the last known cursor position.
+	  " Don't do it when the position is invalid or when inside an event handler
+	  " (happens when dropping a file on gvim).
+	  " Also don't do it when the mark is in the first line, that is the default
+	  " position when opening a file.
+	  autocmd BufReadPost *
+				  \ if line("'\"") > 1 && line("'\"") <= line("$") |
+				  \   exe "normal! g`\"" |
+				  \ endif
   augroup END
-
-else
-
-  set autoindent		" always set autoindenting on
-
 endif " has("autocmd")
 
+
 set expandtab     " don't use actual tab character (ctrl-v)
-set shiftwidth=4  " indenting is 3 spaces
-set autoindent    " turns it on
-set smartindent   " does the right thing (mostly) in programs
+set autoindent    " zachovava odsazeni podle predchozi radky
+set smartindent   " odsazeni podle programovani (zvetsuje)
 set pastetoggle=<f5>
-" set softtabstop=3
-set tabstop=4
+set tabstop=3     " pocet sloupcu tabu
+set expandtab     " expanduje taby na mezery
+set shiftwidth=3  " odsazeni programu (pri pouziti treba '=')
+" set softtabstop=3 " velikost tabu pri nenastaveni ostatnich
 
-" tab completion
-set wildmode=longest,list,full
+" tab completion in <:cmd>
 set wildmenu
+set wildmode=list:longest,full
 
-" For pasting in source formatting
+" For pasting in source formatting (ale pak nefunguji zkratky)
 " set paste
+
+" Zapnuti <:set paste> pri zacatku vkladani
+function! XTermPasteBegin()
+  set pastetoggle=<Esc>[201~
+  set paste
+  return ""
+endfunction
+
+let &t_SI .= "\<Esc>[?2004h"
+let &t_EI .= "\<Esc>[?2004l"
+inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+
 
 " Convenient command to see the difference between the current buffer and the
 " file it was loaded from, thus the changes you made.
@@ -116,31 +125,56 @@ endif
 " encoding
 set enc=utf8
 
-" swap (directory) a backup dirs
-"set backupdir="~/.vim/backup_files/,/tmp/vim_backup/,."
-"set directory="~/.vim/swap_files/,/tmp/vim_swap/,."
-set backupdir=~/.vim/backup_files,.
-set directory=~/.vim/swap_files,.
+" Swap and backup directories
+" Create directories
+let vimdir=expand('~/.vim/')
+let backupdir=vimdir.'/backups//'
+let swapdir=vimdir.'/swap//'
+if !isdirectory(backupdir)
+   :silent !mkdir -p backupdir >/dev/null 2>&1
+endif " !isdirectory(backupdir)
+if !isdirectory(swapdir)
+   :silent !mkdir -p swapdir >/dev/null 2>&1
+endif " !isdirectory(swapdir)
 
-" zkratky
+"set backupdir=~/.vim/backups//,.
+"set directory=~/.vim/swap//,.
+set backupdir=backupdir,.
+set directory=swapdir,.
+
+" Zkratky
+" <F2> otevre nove podokno (rozdeli)
 map  <F2> <c-w>v<c-w>w
-map  <F3> n
+imap <F2> <esc><c-w>v<c-w>wa
+
+" <F3> duplikace zalozky
+map  <F3>   :tabe %<cr>
+map  <F3>   <esc>:tabe %<cr>a
+
+" <F4> zavre podokno
 map  <F4> <c-w>q
+imap <F4> <esc><c-w>qa
+
+" <S-tab> <tab> posuny po oknech
 map  <tab> <c-w>w
+nnoremap <S-Tab> <c-w>r
+inoremap <S-Tab> <esc><c-w>ra
+
+" <F10> format souboru
 map  <F10> ggVG=''
 imap <F10> ggVG=''i
+
+" <F12> ulozeni souboru
 map  <F12> :w<cr>
 imap <F12> <esc>:w<cr>a
-imap <C-d> <esc>caw
 
-map  <F3>           :tabe %<CR>
+" <M-PageDown> <M-PageUp> pohyb mezi zalozkami
 map  <M-PageDown>   :tabn<CR>
 map  <M-PageUp>     :tabp<CR>
 imap <M-PageDown>   <esc>:tabn<CR>a
 imap <M-PageUp>     <esc>:tabp<CR>a
-" a potom [F3] otevira novy tab (podobne jako [F2] otevira okno) a pomoci
-"  [alt]+[pg-up] a [alt]+[pg-down] se pohybujes mezi taby (s crtl jsou to
-"  taby terminalu a se shiftem mi to neslo...).
+
+
 
 " ### LaTex ###
 " zkratky pro kompilaci LateXu - CTRL + l
