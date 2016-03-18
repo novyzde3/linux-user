@@ -56,15 +56,6 @@ if [ -n "$force_color_prompt" ]; then
     fi
 fi
 
-if [ "$color_prompt" = yes ]; then
-    #PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ ' # puvodni
-    PROMPT_COMMAND="source $HOME/.prompt.sh" # nove
-else
-    # PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ ' # puvodni
-    PROMPT_COMMAND="source $HOME/.prompt.sh" # nove
-fi
-unset color_prompt force_color_prompt
-
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
 xterm*|rxvt*)
@@ -109,7 +100,16 @@ alias cd='cd -P'
 
 # GIT alias g a doplnovani
 alias g='git'
-complete -o bashdefault -o default -o nospace -F __git_wrap__git_main g
+# complete -o bashdefault -o default -o nospace -F __git_wrap__git_main g # V adresari /etc/bash_completion.d/git
+
+##### Rucni autocomplete pro ssh #####
+autocompletes="/etc/bash_completion.d/"
+[[ -d "$autocompletes" ]] && {
+    for i in ${autocompletes}/*[^~] ; do
+        source "${i}"
+    done
+}
+######################################
 ################
 
 
@@ -147,4 +147,6 @@ removeToRecycleBin() {
 alias rm=removeToRecycleBin
 ## Jeste cron na mazani kose
 ###########################################
+
+
 
