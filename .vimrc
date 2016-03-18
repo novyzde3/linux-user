@@ -102,13 +102,13 @@ set wildmode=list:longest,full
 " For pasting in source formatting (ale pak nefunguji zkratky)
 " set paste
 
-" Zapnuti <:set paste> pri zacatku vkladani
+" Zapnuti <:set paste> pouze pri vkladani
+" <:set paste> znamena nefunkcni zkratky v insert mode
 function! XTermPasteBegin()
   set pastetoggle=<Esc>[201~
   set paste
   return ""
 endfunction
-
 let &t_SI .= "\<Esc>[?2004h"
 let &t_EI .= "\<Esc>[?2004l"
 inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
@@ -122,8 +122,9 @@ if !exists(":DiffOrig")
 		  \ | wincmd p | diffthis
 endif
 
-" encoding
+" Kodovani
 set enc=utf8
+
 
 " Swap and backup directories
 " Create directories
@@ -131,19 +132,21 @@ let vimdir=expand('~/.vim/')
 let backupdir=vimdir.'/backups//'
 let swapdir=vimdir.'/swap//'
 if !isdirectory(backupdir)
-   :silent !mkdir -p backupdir >/dev/null 2>&1
+   silent execute expand('!mkdir -p ' . backupdir)
 endif " !isdirectory(backupdir)
 if !isdirectory(swapdir)
-   :silent !mkdir -p swapdir >/dev/null 2>&1
+   silent execute expand('!mkdir -p ' . swapdir)
 endif " !isdirectory(swapdir)
 
-"set backupdir=~/.vim/backups//,.
-"set directory=~/.vim/swap//,.
-set backupdir=backupdir,.
-set directory=swapdir,.
+execute expand ('set backupdir=') . backupdir . ',.'
+execute expand ('set directory=') . swapdir   . ',.'
+
 
 " Zkratky
+" <ZZ> ulozit  azavrit
+" <C-x><C-e> v bash otevre EDITOR a umozni napsat tmp skript
 " <F2> otevre nove podokno (rozdeli)
+
 map  <F2> <c-w>v<c-w>w
 imap <F2> <esc><c-w>v<c-w>wa
 
